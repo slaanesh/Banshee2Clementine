@@ -4,8 +4,7 @@ Olivier Sirven <the.slaa@gmail.com>
 
 == Description
 
-b2c is a simple tool to import some meta data and playlists form
-======================================================================
+b2c is a simple tool to import some meta data and playlists from
 [Banshee player] to http://www.clementine-player.org/[Clementine]
 
 It currently imports the following meta data (only for files added
