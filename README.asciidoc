@@ -1,8 +1,9 @@
 banshee2clementine
-======================================
+==================
 Olivier Sirven <the.slaa@gmail.com>
 
-== Description
+Description
+-----------
 
 b2c is a simple tool to import some meta data and playlists from
 htp://banshee.fm/[Banshee player] to http://www.clementine-player.org/[Clementine]
@@ -16,7 +17,9 @@ both to Banshee and Clementine):
 By default it just does nothing. You need to specify at least
 +--update-stats+ or +--import-playlists+ options
 
-.Available options
+Available options
+-----------------
+
 ----------------------------------------------------------------------
 ./b2c.py --help
 usage: b2c.py [-h] [--banshee-db BANSHEE_DB] [--clementine-db CLEMENTINE_DB] [--update-stats] [--import-playlists]
@@ -33,7 +36,9 @@ optional arguments:
   --import-playlists    import banshee playlists
 ----------------------------------------------------------------------
 
-.Example usage to import both stats and playlists
+Example usage to import both stats and playlists
+------------------------------------------------
+
 ----------------------------------------------------------------------
 ./b2c.py --update-stats --import-playlists
 ----------------------------------------------------------------------
