@@ -1,0 +1,40 @@
+banshee2clementine
+======================================
+Olivier Sirven <the.slaa@gmail.com>
+
+== Description
+
+b2c is a simple tool to import some meta data and playlists form
+======================================================================
+[Banshee player] to http://www.clementine-player.org/[Clementine]
+
+It currently imports the following meta data (only for files added
+both to Banshee and Clementine):
+* rating
+* play count
+* skip count
+
+By default it just does nothing. You need to specify at least
++--update-stats+ or +--import-playlists+ options
+
+.Available options
+----------------------------------------------------------------------
+./b2c.py --help
+usage: b2c.py [-h] [--banshee-db BANSHEE_DB] [--clementine-db CLEMENTINE_DB] [--update-stats] [--import-playlists]
+
+Import banshee data into clementine DB
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --banshee-db BANSHEE_DB
+                        path to banshee DB if not automatically found
+  --clementine-db CLEMENTINE_DB
+                        path to clementine DB if not automatically found
+  --update-stats        update score, play count and skip counts
+  --import-playlists    import banshee playlists
+----------------------------------------------------------------------
+
+.Example usage to import both stats and playlists
+----------------------------------------------------------------------
+./b2c.py --update-stats --import-playlists
+----------------------------------------------------------------------
