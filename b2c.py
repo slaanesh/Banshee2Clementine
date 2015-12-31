@@ -66,6 +66,8 @@ class B2C:
             ban_cursor.execute(query)
             nb_items = 0
             for item in ban_cursor:
+                if item['uri'] is None:
+                    logging.warn('uri is None: %s', item)
                 path = self._uri_to_path(item['uri'])
                 if os.path.isfile(path) and self._is_audio_file(path):
                     nb_items += 1
@@ -75,6 +77,8 @@ class B2C:
                         self._update_meta_data(path, item['rating'],
                                 item['PlayCount'], item['SkipCount'],
                                 item['LastPlayedStamp'])
+                else:
+                    logging.warn('%s is not a file', path)
 
             logging.info('Checked %d files', nb_items)
 
@@ -244,10 +248,7 @@ class B2C:
 
 
 if __name__ == '__main__':
-    try:
-        b2c = B2C()
-        b2c.run()
-    except Exception as e:
-        logging.error(e)
+    b2c = B2C()
+    b2c.run()
 
 sys.exit(1)
