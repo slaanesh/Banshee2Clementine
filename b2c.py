@@ -71,10 +71,11 @@ class B2C:
                 path = self._uri_to_path(item['uri'])
                 if os.path.isfile(path) and self._is_audio_file(path):
                     nb_items += 1
-                    if self._path_not_in_clementine(path):
+                    row_id = self._get_clementine_library_id(item['uri'])
+                    if row_id is None:
                         logging.warn('%s is missing', path)
                     else:
-                        self._update_meta_data(path, item['rating'],
+                        self._update_meta_data(row_id, item['uri'], item['rating'],
                                 item['PlayCount'], item['SkipCount'],
                                 item['LastPlayedStamp'])
                 else:
@@ -209,7 +210,7 @@ class B2C:
             playcount = playcount + :playcount1,
             skipcount = skipcount + :skipcount1,
             lastplayed = :lastplayed1
-        WHERE filename = :filename
+        WHERE rowid = :rowid1
             AND (rating != :rating2 OR playcount != :playcount2 OR skipcount != :skipcount2)
         ;
         """
@@ -221,7 +222,7 @@ class B2C:
                 'playcount2': playcount,
                 'skipcount2': skipcount,
                 'lastplayed1': lastplayed,
-                'filename': path,
+                'rowid1': row_id,
                 })
 
         if cursor.rowcount != 0:
