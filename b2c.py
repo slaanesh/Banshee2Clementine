@@ -151,10 +151,46 @@ class B2C:
         """
 
         cursor = self.clementine.cursor()
-        query = 'SELECT 1 FROM songs WHERE filename = :filename;'
-        cursor.execute(query, {'filename': path})
+        query = 'SELECT 1 FROM songs WHERE filename like :filename;'
+        cursor.execute(query, {'filename': self._get_clementine_filename(path)})
 
         return cursor.fetchone() == None
+
+    def _check_urlencode(self, path):
+        """ Checks if a string is urlencoded... not foolproof, but good enough
+        """
+        if '%20' in path and ' ' not in path:
+            return True
+        else:
+            return False
+
+    def _get_clementine_filename(self, path):
+        """ Converts any path to a clemintine path """
+        if not self._check_urlencode(path):
+            path = urllib.urlencode(path)
+        if not path.startswith('file://'):
+            path = 'file://' + path
+
+        # clemintine stores some characters unencoded... it's not consistent with
+        # the library.
+        path = (path.replace('%', '%%')
+                .replace('%%2C', ',').replace('%%28', '(')
+                .replace('%%29', ')').replace('%%27', "'")
+                .replace('%%26', '&').replace('%%2B', '+')
+                .replace('%%21', '!').replace('%%3B', ';')
+                .replace('%%3D', '=').replace('%%7E', '~')
+                )
+
+        return path
+
+    def _get_banshee_filename(self, path):
+        """ Converts any path to a banshee path """
+        if not self._check_urlencode(path):
+            path = urllib.urlencode(path)
+        if not path.startswith('file://'):
+            path = 'file://' + path
+
+        return path
 
     def _update_meta_data(self, row_id, path, rating, playcount, skipcount, lastplayed):
         """
@@ -211,7 +247,8 @@ class B2C:
         """
 
         cursor = self.clementine.cursor()
-        query = 'SELECT rowid FROM songs WHERE filename = :filename;'
+        query = 'SELECT rowid FROM songs WHERE filename like :filename;'
+        path = self._get_clementine_filename(path)
         cursor.execute(query, {'filename': path})
         row = cursor.fetchone()
         if not row:
@@ -232,7 +269,7 @@ class B2C:
         for pl_item in pl_cursor:
             path = self._uri_to_path(pl_item['uri'])
             if os.path.isfile(path) and self._is_audio_file(path):
-                library_id = self._get_clementine_library_id(path)
+                library_id = self._get_clementine_library_id(pl_item['uri'])
                 nb_added += 1
                 cursor.execute(query, {
                         'playlist_id': playlist_id,
