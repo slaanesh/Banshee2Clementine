@@ -207,8 +207,8 @@ class B2C:
             songs
         SET
             rating = :rating1,
-            playcount = playcount + :playcount1,
-            skipcount = skipcount + :skipcount1,
+            playcount = :playcount1,
+            skipcount = :skipcount1,
             lastplayed = :lastplayed1
         WHERE rowid = :rowid1
             AND (rating != :rating2 OR playcount != :playcount2 OR skipcount != :skipcount2)
