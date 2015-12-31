@@ -135,8 +135,11 @@ class B2C:
         """
         Convert an URI into a path
         """
+        uri = urllib.unquote(uri)
+        if uri.startswith('file:///'):
+            uri = uri[7:]
 
-        return urllib.unquote(uri).split('file://')[1]
+        return uri
 
     def _is_audio_file(self, path):
         """
