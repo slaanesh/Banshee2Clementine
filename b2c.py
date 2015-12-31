@@ -211,17 +211,19 @@ class B2C:
             skipcount = :skipcount1,
             lastplayed = :lastplayed1
         WHERE rowid = :rowid1
-            AND (rating != :rating2 OR playcount != :playcount2 OR skipcount != :skipcount2)
+            AND (rating != :rating2 OR playcount != :playcount2
+            OR skipcount != :skipcount2 OR lastplayed != :lastplayed2)
         ;
         """
         cursor.execute(query, {
                 'rating1': rating,
                 'playcount1': playcount,
                 'skipcount1': skipcount,
+                'lastplayed1': lastplayed,
                 'rating2': rating,
                 'playcount2': playcount,
                 'skipcount2': skipcount,
-                'lastplayed1': lastplayed,
+                'lastplayed2': lastplayed,
                 'rowid1': row_id,
                 })
 
