@@ -61,7 +61,7 @@ class B2C:
 
         if self.args.update_stats:
             logging.info('Updating songs statistics from banshee ...')
-            query = 'select uri, rating, PlayCount, SkipCount from CoreTracks;'
+            query = 'select uri, rating, PlayCount, SkipCount, LastPlayedStamp from CoreTracks;'
 
             ban_cursor.execute(query)
             nb_items = 0
@@ -72,7 +72,9 @@ class B2C:
                     if self._path_not_in_clementine(path):
                         logging.warn('%s is missing', path)
                     else:
-                        self._update_meta_data(path, item['rating'], item['PlayCount'], item['SkipCount'])
+                        self._update_meta_data(path, item['rating'],
+                                item['PlayCount'], item['SkipCount'],
+                                item['LastPlayedStamp'])
 
             logging.info('Checked %d files', nb_items)
 
@@ -150,7 +152,7 @@ class B2C:
 
         return cursor.fetchone() == None
 
-    def _update_meta_data(self, path, rating, playcount, skipcount):
+    def _update_meta_data(self, row_id, path, rating, playcount, skipcount, lastplayed):
         """
         Update clementine DB based of banshee stats if needed
         """
@@ -162,7 +164,8 @@ class B2C:
         SET
             rating = :rating1,
             playcount = playcount + :playcount1,
-            skipcount = skipcount + :skipcount1
+            skipcount = skipcount + :skipcount1,
+            lastplayed = :lastplayed1
         WHERE filename = :filename
             AND (rating != :rating2 OR playcount != :playcount2 OR skipcount != :skipcount2)
         ;
@@ -174,7 +177,8 @@ class B2C:
                 'rating2': rating,
                 'playcount2': playcount,
                 'skipcount2': skipcount,
-                'filename': path
+                'lastplayed1': lastplayed,
+                'filename': path,
                 })
 
         if cursor.rowcount != 0:
