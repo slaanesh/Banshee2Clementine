@@ -71,7 +71,7 @@ class B2C:
                 path = self._uri_to_path(item['uri'])
                 if os.path.isfile(path) and self._is_audio_file(path):
                     nb_items += 1
-                    row_id = self._get_clementine_library_id(item['uri'])
+                    row_id = self._get_clementine_library_id(path)
                     if row_id is None:
                         logging.warn('%s is missing', path)
                     else:
@@ -171,18 +171,18 @@ class B2C:
     def _get_clementine_filename(self, path):
         """ Converts any path to a clemintine path """
         if not self._check_urlencode(path):
-            path = urllib.urlencode(path)
+            path = urllib.quote(path)
         if not path.startswith('file://'):
             path = 'file://' + path
 
         # clemintine stores some characters unencoded... it's not consistent with
         # the library.
-        path = (path.replace('%', '%%')
-                .replace('%%2C', ',').replace('%%28', '(')
-                .replace('%%29', ')').replace('%%27', "'")
-                .replace('%%26', '&').replace('%%2B', '+')
-                .replace('%%21', '!').replace('%%3B', ';')
-                .replace('%%3D', '=').replace('%%7E', '~')
+        path = (path.replace('%2C', ',').replace('%28', '(')
+                    .replace('%29', ')').replace('%27', "'")
+                    .replace('%26', '&').replace('%2B', '+')
+                    .replace('%21', '!').replace('%3B', ';')
+                    .replace('%3D', '=').replace('%7E', '~')
+                    .replace('%40', '@')
                 )
 
         return path
@@ -190,7 +190,7 @@ class B2C:
     def _get_banshee_filename(self, path):
         """ Converts any path to a banshee path """
         if not self._check_urlencode(path):
-            path = urllib.urlencode(path)
+            path = urllib.quote(path)
         if not path.startswith('file://'):
             path = 'file://' + path
 
@@ -275,7 +275,7 @@ class B2C:
         for pl_item in pl_cursor:
             path = self._uri_to_path(pl_item['uri'])
             if os.path.isfile(path) and self._is_audio_file(path):
-                library_id = self._get_clementine_library_id(pl_item['uri'])
+                library_id = self._get_clementine_library_id(path)
                 nb_added += 1
                 cursor.execute(query, {
                         'playlist_id': playlist_id,
