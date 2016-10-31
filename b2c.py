@@ -171,7 +171,7 @@ class B2C:
     def _get_clementine_filename(self, path):
         """ Converts any path to a clemintine path """
         if not self._check_urlencode(path):
-            path = urllib.urlencode(path)
+            path = urllib.quote(path)
         if not path.startswith('file://'):
             path = 'file://' + path
 
@@ -190,7 +190,7 @@ class B2C:
     def _get_banshee_filename(self, path):
         """ Converts any path to a banshee path """
         if not self._check_urlencode(path):
-            path = urllib.urlencode(path)
+            path = urllib.quote(path)
         if not path.startswith('file://'):
             path = 'file://' + path
 
