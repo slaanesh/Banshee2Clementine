@@ -71,7 +71,7 @@ class B2C:
                 path = self._uri_to_path(item['uri'])
                 if os.path.isfile(path) and self._is_audio_file(path):
                     nb_items += 1
-                    row_id = self._get_clementine_library_id(item['uri'])
+                    row_id = self._get_clementine_library_id(path)
                     if row_id is None:
                         logging.warn('%s is missing', path)
                     else:
@@ -275,7 +275,7 @@ class B2C:
         for pl_item in pl_cursor:
             path = self._uri_to_path(pl_item['uri'])
             if os.path.isfile(path) and self._is_audio_file(path):
-                library_id = self._get_clementine_library_id(pl_item['uri'])
+                library_id = self._get_clementine_library_id(path)
                 nb_added += 1
                 cursor.execute(query, {
                         'playlist_id': playlist_id,
