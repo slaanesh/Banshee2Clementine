@@ -177,12 +177,12 @@ class B2C:
 
         # clemintine stores some characters unencoded... it's not consistent with
         # the library.
-        path = (path.replace('%', '%%')
-                .replace('%%2C', ',').replace('%%28', '(')
-                .replace('%%29', ')').replace('%%27', "'")
-                .replace('%%26', '&').replace('%%2B', '+')
-                .replace('%%21', '!').replace('%%3B', ';')
-                .replace('%%3D', '=').replace('%%7E', '~')
+        path = (path.replace('%2C', ',').replace('%28', '(')
+                    .replace('%29', ')').replace('%27', "'")
+                    .replace('%26', '&').replace('%2B', '+')
+                    .replace('%21', '!').replace('%3B', ';')
+                    .replace('%3D', '=').replace('%7E', '~')
+                    .replace('%40', '@')
                 )
 
         return path
