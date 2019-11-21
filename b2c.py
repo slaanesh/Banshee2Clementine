@@ -182,7 +182,7 @@ class B2C:
                     .replace('%26', '&').replace('%2B', '+')
                     .replace('%21', '!').replace('%3B', ';')
                     .replace('%3D', '=').replace('%7E', '~')
-                    .replace('%40', '@')
+                    .replace('%40', '@').replace('%24', '$')
                 )
 
         return path
