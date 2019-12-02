@@ -61,18 +61,25 @@ class B2C:
 
         if self.args.update_stats:
             logging.info('Updating songs statistics from banshee ...')
-            query = 'select uri, rating, PlayCount, SkipCount from CoreTracks;'
+            query = 'select uri, rating, PlayCount, SkipCount, LastPlayedStamp from CoreTracks;'
 
             ban_cursor.execute(query)
             nb_items = 0
             for item in ban_cursor:
+                if item['uri'] is None:
+                    logging.warn('uri is None: %s', item)
                 path = self._uri_to_path(item['uri'])
                 if os.path.isfile(path) and self._is_audio_file(path):
                     nb_items += 1
-                    if self._path_not_in_clementine(path):
+                    row_id = self._get_clementine_library_id(path)
+                    if row_id is None:
                         logging.warn('%s is missing', path)
                     else:
-                        self._update_meta_data(path, item['rating'], item['PlayCount'], item['SkipCount'])
+                        self._update_meta_data(row_id, item['uri'], item['rating'],
+                                item['PlayCount'], item['SkipCount'],
+                                item['LastPlayedStamp'])
+                else:
+                    logging.warn('%s is not a file', path)
 
             logging.info('Checked %d files', nb_items)
 
@@ -129,8 +136,11 @@ class B2C:
         """
         Convert an URI into a path
         """
+        uri = urllib.unquote(uri)
+        if uri.startswith('file:///'):
+            uri = uri[7:]
 
-        return urllib.unquote(uri).split('file://')[1]
+        return uri
 
     def _is_audio_file(self, path):
         """
@@ -145,12 +155,48 @@ class B2C:
         """
 
         cursor = self.clementine.cursor()
-        query = 'SELECT 1 FROM songs WHERE filename = :filename;'
-        cursor.execute(query, {'filename': path})
+        query = 'SELECT 1 FROM songs WHERE filename like :filename;'
+        cursor.execute(query, {'filename': self._get_clementine_filename(path)})
 
         return cursor.fetchone() == None
 
-    def _update_meta_data(self, path, rating, playcount, skipcount):
+    def _check_urlencode(self, path):
+        """ Checks if a string is urlencoded... not foolproof, but good enough
+        """
+        if '%20' in path and ' ' not in path:
+            return True
+        else:
+            return False
+
+    def _get_clementine_filename(self, path):
+        """ Converts any path to a clemintine path """
+        if not self._check_urlencode(path):
+            path = urllib.quote(path)
+        if not path.startswith('file://'):
+            path = 'file://' + path
+
+        # clemintine stores some characters unencoded... it's not consistent with
+        # the library.
+        path = (path.replace('%2C', ',').replace('%28', '(')
+                    .replace('%29', ')').replace('%27', "'")
+                    .replace('%26', '&').replace('%2B', '+')
+                    .replace('%21', '!').replace('%3B', ';')
+                    .replace('%3D', '=').replace('%7E', '~')
+                    .replace('%40', '@').replace('%24', '$')
+                )
+
+        return path
+
+    def _get_banshee_filename(self, path):
+        """ Converts any path to a banshee path """
+        if not self._check_urlencode(path):
+            path = urllib.quote(path)
+        if not path.startswith('file://'):
+            path = 'file://' + path
+
+        return path
+
+    def _update_meta_data(self, row_id, path, rating, playcount, skipcount, lastplayed):
         """
         Update clementine DB based of banshee stats if needed
         """
@@ -161,20 +207,24 @@ class B2C:
             songs
         SET
             rating = :rating1,
-            playcount = playcount + :playcount1,
-            skipcount = skipcount + :skipcount1
-        WHERE filename = :filename
-            AND (rating != :rating2 OR playcount != :playcount2 OR skipcount != :skipcount2)
+            playcount = :playcount1,
+            skipcount = :skipcount1,
+            lastplayed = :lastplayed1
+        WHERE rowid = :rowid1
+            AND (rating != :rating2 OR playcount != :playcount2
+            OR skipcount != :skipcount2 OR lastplayed != :lastplayed2)
         ;
         """
         cursor.execute(query, {
                 'rating1': rating,
                 'playcount1': playcount,
                 'skipcount1': skipcount,
+                'lastplayed1': lastplayed,
                 'rating2': rating,
                 'playcount2': playcount,
                 'skipcount2': skipcount,
-                'filename': path
+                'lastplayed2': lastplayed,
+                'rowid1': row_id,
                 })
 
         if cursor.rowcount != 0:
@@ -203,7 +253,8 @@ class B2C:
         """
 
         cursor = self.clementine.cursor()
-        query = 'SELECT rowid FROM songs WHERE filename = :filename;'
+        query = 'SELECT rowid FROM songs WHERE filename like :filename;'
+        path = self._get_clementine_filename(path)
         cursor.execute(query, {'filename': path})
         row = cursor.fetchone()
         if not row:
@@ -240,10 +291,7 @@ class B2C:
 
 
 if __name__ == '__main__':
-    try:
-        b2c = B2C()
-        b2c.run()
-    except Exception as e:
-        logging.error(e)
+    b2c = B2C()
+    b2c.run()
 
 sys.exit(1)
